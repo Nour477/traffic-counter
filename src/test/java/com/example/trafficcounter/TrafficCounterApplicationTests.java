@@ -9,5 +9,4 @@ class TrafficCounterApplicationTests {
 	@Test
 	void contextLoads() {
 	}
-
 }
