@@ -3,10 +3,10 @@ package com.example.trafficcounter.service;
 import com.example.trafficcounter.domain.TrafficRecord;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.PriorityQueue;
 import java.util.stream.Collectors;
 
 public class TrafficStatisticsService {
@@ -26,32 +26,36 @@ public class TrafficStatisticsService {
     }
 
     public List<TrafficRecord> findTop3(List<TrafficRecord> records) {
-        return records.stream()
-                .sorted(Comparator.comparingInt(TrafficRecord::getCarCount).reversed())
-                .limit(3)
-                .collect(Collectors.toList());
-    }
 
-    public List<TrafficRecord> findLeastHourAndHalf(List<TrafficRecord> records) {
-        if (records.size() <= 3) {
-            return records;
-        }
+        PriorityQueue<TrafficRecord> heap =
+                new PriorityQueue<>(Comparator.comparingInt(TrafficRecord::getCarCount));
 
-        List<TrafficRecord> sorted = new ArrayList<>(records);
-        sorted.sort(Comparator.comparing(TrafficRecord::getTimestamp));
-
-        int minSum = Integer.MAX_VALUE;
-        List<TrafficRecord> leastPeriod = null;
-
-        for (int i = 0; i <= sorted.size() - 3; i++) {
-            List<TrafficRecord> window = sorted.subList(i, i + 3);
-            int sum = window.stream().mapToInt(TrafficRecord::getCarCount).sum();
-            if (sum < minSum) {
-                minSum = sum;
-                leastPeriod = new ArrayList<>(window);
+        for (TrafficRecord record : records) {
+            heap.offer(record);
+            if (heap.size() > 3) {
+                heap.poll();
             }
         }
 
-        return leastPeriod != null ? leastPeriod : List.of();
+        return heap.stream()
+                .sorted(Comparator.comparingInt(TrafficRecord::getCarCount).reversed())
+                .toList();
     }
+
+        public List<TrafficRecord> findLeastHourAndHalf(List<TrafficRecord> records) {
+            if (records.size() <= 3) {
+                return records;
+            }
+            int currentSum = records.subList(0, 3).stream().mapToInt(TrafficRecord::getCarCount).sum();
+            int minSum = currentSum;
+            int minStartIndex = 0;
+            for (int i = 3; i < records.size(); i++) {
+                currentSum += records.get(i).getCarCount() - records.get(i - 3).getCarCount();
+                if (currentSum < minSum) {
+                    minSum = currentSum;
+                    minStartIndex = i - 2;
+                }
+            }
+        return records.subList(minStartIndex, minStartIndex + 3);
+        }
 }
