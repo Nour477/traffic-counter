@@ -123,7 +123,7 @@ class TrafficStatisticsServiceTest {
     }
 
     @Test
-    void least1_5HourPeriodWithLessThan3Records() {
+    void leastHourAndHalfPeriodWithLessThan3Records() {
         List<TrafficRecord> records = List.of(
                 new TrafficRecord(LocalDateTime.of(2021, 12, 1, 5, 0, 0), 5),
                 new TrafficRecord(LocalDateTime.of(2021, 12, 1, 5, 30, 0), 12)
